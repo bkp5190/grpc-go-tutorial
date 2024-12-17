@@ -1,17 +1,52 @@
 package handler
 
 import (
+	"context"
+
 	"github.com/bkp5190/go-grpc-tutorial/services/common/genproto/orders"
 	"github.com/bkp5190/go-grpc-tutorial/services/orders/types"
+	"google.golang.org/grpc"
 )
 
 
 type OrdersGrpcHandler struct {
-    orderService types.OrderService
+    ordersService types.OrderService
     orders.UnimplementedOrderServiceServer
 
 }
 
-func NewGrpcOrdersService() {
-    gRPCHandler := &OrdersGrpcHandler{}
+func NewGrpcOrdersService(grpc *grpc.Server, ordersService types.OrderService) {
+    gRPCHandler := &OrdersGrpcHandler{
+        ordersService: ordersService,
+    }
+
+    orders.RegisterOrderServiceServer(grpc, gRPCHandler)
+}
+
+func (h *OrdersGrpcHandler) GetOrders(ctx context.Context, req *orders.GetOrdersRequest) (*orders.GetOrderResponse, error) {
+	o := h.ordersService.GetOrders(ctx)
+	res := &orders.GetOrderResponse{
+		Orders: o,
+	}
+
+	return res, nil
+}
+
+func (h *OrdersGrpcHandler) CreateOrder(ctx context.Context, req *orders.CreateOrderRequest) (*orders.CreateOrderResponse, error) {
+    order := &orders.Order{
+        OrderId: 42,
+        CustomerId: 2,
+        ProductId: 1,
+        Quantity: 10,
+    }
+    err := h.ordersService.CreateOrder(ctx, order)
+    if err != nil {
+        return nil, err
+    }
+
+    res := &orders.CreateOrderResponse{
+        Status: "success",
+    }
+
+    return res, nil
 }

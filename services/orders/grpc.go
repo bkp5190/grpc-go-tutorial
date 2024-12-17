@@ -1,9 +1,11 @@
-package orders
+package main
 
 import (
 	"log"
 	"net"
 
+	handler "github.com/bkp5190/go-grpc-tutorial/services/orders/handler/orders"
+	"github.com/bkp5190/go-grpc-tutorial/services/orders/service"
 	"google.golang.org/grpc"
 )
 
@@ -23,6 +25,8 @@ func (s *gRPCServer) Run() error {
     grpcServer := grpc.NewServer()
 
     // Register gRPC services
+    orderService := service.NewOrderService()
+    handler.NewGrpcOrdersService(grpcServer, orderService)
 
     log.Print("Started grpc server on", s.addr)
 
